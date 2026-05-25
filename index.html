@@ -1,0 +1,33 @@
+<!-- index.html -->
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Escáner de Números</title>
+
+    <link rel="stylesheet" href="style.css" />
+
+    <script src="https://unpkg.com/tesseract.js@5/dist/tesseract.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Escanear y Sumar</h1>
+
+      <video id="video" autoplay playsinline></video>
+
+      <canvas id="canvas"></canvas>
+
+      <button id="btnEscanear">Escanear Número</button>
+
+      <div class="resultado">
+        Total:
+        <span id="total">0</span>
+      </div>
+
+      <div id="lista"></div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
