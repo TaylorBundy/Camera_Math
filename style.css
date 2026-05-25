@@ -19,13 +19,23 @@ body {
 }
 
 .container {
-  position: relative;
+  /* position: relative;
+  overflow: hidden; */
   width: 100%;
   max-width: 550px;
 
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+.cameraContainer {
+  position: relative;
+
+  width: 100%;
+
+  overflow: hidden;
+
+  border-radius: 15px;
 }
 
 h1 {
@@ -38,7 +48,7 @@ video {
   border: 3px solid #333;
 }
 
-.scannerBox {
+/* .scannerBox {
   position: absolute;
 
   width: 45%;
@@ -54,8 +64,29 @@ video {
   border-radius: 15px;
 
   box-shadow: 0 0 20px #00ff88;
-}
+} */
+.scannerBox {
+  position: absolute;
 
+  top: 50%;
+  left: 50%;
+
+  transform: translate(-50%, -50%);
+
+  width: calc(60% / var(--zoom));
+  height: calc(70% / var(--zoom));
+
+  border: 3px solid #00ff88;
+
+  border-radius: 15px;
+
+  box-shadow: 0 0 20px #00ff88;
+
+  pointer-events: none;
+  transition:
+    width 0.1s,
+    height 0.1s;
+}
 canvas {
   display: none;
 }

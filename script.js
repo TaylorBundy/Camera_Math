@@ -9,39 +9,31 @@ const listaNumeros = document.getElementById("listaNumeros");
 const resultadoElement = document.getElementById("resultado");
 
 let numerosDetectados = [];
-//const video = document.getElementById("video");
-
+let nivelZoom = 1;
 const zoomInput = document.getElementById("zoom");
 
 let track;
 const zoomValor = document.getElementById("zoomValor");
 
-zoomInput.addEventListener("input", () => {
-  zoomValor.textContent = Number(zoomInput.value).toFixed(1) + "x";
-});
+// const tempCanvas = document.createElement("canvas");
+
+// const tempCtx = tempCanvas.getContext("2d");
+
+// tempCanvas.width = canvas.width * 2;
+
+// tempCanvas.height = canvas.height * 2;
+
+// tempCtx.drawImage(canvas, 0, 0, tempCanvas.width, tempCanvas.height);
+
+// const resultado = await Tesseract.recognize(tempCanvas, "eng", {
+//   logger: (m) => console.log(m),
+// });
+
+document.documentElement.style.setProperty("--zoom", 1);
 
 // ==========================
 // INICIAR CAMARA
 // ==========================
-
-async function iniciarCamara2() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: "environment",
-      },
-
-      audio: false,
-    });
-
-    video.srcObject = stream;
-    track = stream.getVideoTracks()[0];
-  } catch (error) {
-    alert("No se pudo abrir la cámara");
-
-    console.error(error);
-  }
-}
 async function iniciarCamara() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -94,72 +86,102 @@ function configurarZoom() {
 // ==========================
 // EVENTO ZOOM
 // ==========================
-
 zoomInput.addEventListener("input", async () => {
+  nivelZoom = Number(zoomInput.value);
+
+  zoomValor.textContent = nivelZoom.toFixed(1) + "x";
+
+  // ======================
+  // ZOOM NATIVO
+  // ======================
+  // ACTUALIZAR CSS
+  document.documentElement.style.setProperty("--zoom", nivelZoom);
+
   if (!track) return;
 
   try {
-    await track.applyConstraints({
-      advanced: [
-        {
-          zoom: Number(zoomInput.value),
-        },
-      ],
-    });
+    const capabilities = track.getCapabilities();
+
+    if (capabilities.zoom) {
+      await track.applyConstraints({
+        advanced: [
+          {
+            zoom: nivelZoom,
+          },
+        ],
+      });
+    }
   } catch (error) {
-    console.error("Error zoom:", error);
+    console.log("Zoom nativo no disponible");
   }
 });
+
+// zoomInput.addEventListener("input", async () => {
+//   if (!track) return;
+
+//   try {
+//     await track.applyConstraints({
+//       advanced: [
+//         {
+//           zoom: Number(zoomInput.value),
+//         },
+//       ],
+//     });
+//   } catch (error) {
+//     console.error("Error zoom:", error);
+//   }
+// });
 
 // ==========================
 // INICIAR
 // ==========================
 
 iniciarCamara();
-//const zoomInput = document.getElementById("zoom");
-
-// zoomInput.addEventListener("input", async () => {
-//   const capabilities = track.getCapabilities();
-
-//   if (!capabilities.zoom) return;
-
-//   await track.applyConstraints({
-//     advanced: [
-//       {
-//         zoom: Number(zoomInput.value),
-//       },
-//     ],
-//   });
-// });
-
-//iniciarCamara();
-
-// ==========================
-// ESCANEAR
-// ==========================
 
 btnCapturar.addEventListener("click", async () => {
   btnCapturar.disabled = true;
+
   btnCapturar.textContent = "Escaneando...";
 
   try {
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    //ctx.drawImage(video, 0, 0);
     const ancho = video.videoWidth;
+
     const alto = video.videoHeight;
 
+    // ======================
+    // ZOOM DIGITAL
+    // ======================
+
+    const zoomAncho = ancho / nivelZoom;
+
+    const zoomAlto = alto / nivelZoom;
+
+    // ======================
     // RECORTE CENTRAL
-    const recorteAncho = ancho * 0.45;
-    const recorteAlto = alto * 0.9;
+    // ======================
+
+    const recorteAncho = zoomAncho * 0.45;
+
+    const recorteAlto = zoomAlto * 0.9;
 
     const x = (ancho - recorteAncho) / 2;
 
     const y = (alto - recorteAlto) / 2;
 
-    canvas.width = recorteAncho;
-    canvas.height = recorteAlto;
+    // ======================
+    // CANVAS
+    // ======================
+
+    // canvas.width = recorteAncho;
+
+    // canvas.height = recorteAlto;
+    canvas.width = Math.floor(recorteAncho);
+
+    canvas.height = Math.floor(recorteAlto);
+
+    // ======================
+    // DIBUJAR
+    // ======================
 
     ctx.drawImage(
       video,
@@ -177,8 +199,40 @@ btnCapturar.addEventListener("click", async () => {
       recorteAlto,
     );
 
+    // ======================
+    // BLANCO Y NEGRO
+    // ======================
+
+    mejorarImagen();
+
+    const tempCanvas = document.createElement("canvas");
+
+    const tempCtx = tempCanvas.getContext("2d");
+
+    tempCanvas.width = canvas.width * 2;
+
+    tempCanvas.height = canvas.height * 2;
+
+    tempCtx.drawImage(canvas, 0, 0, tempCanvas.width, tempCanvas.height);
+
+    // ======================
     // OCR
-    const resultado = await Tesseract.recognize(canvas, "eng");
+    // ======================
+    const resultado = await Tesseract.recognize(tempCanvas, "eng", {
+      logger: (m) => console.log(m),
+
+      tessedit_char_whitelist: "0123456789",
+    });
+
+    // const resultado = await Tesseract.recognize(
+    //   canvas,
+
+    //   "eng",
+
+    //   {
+    //     logger: (m) => console.log(m),
+    //   },
+    // );
 
     const texto = resultado.data.text;
 
@@ -191,9 +245,30 @@ btnCapturar.addEventListener("click", async () => {
     alert("Error al escanear");
   } finally {
     btnCapturar.disabled = false;
+
     btnCapturar.textContent = "Escanear";
   }
 });
+
+function mejorarImagen() {
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+  const data = imageData.data;
+
+  for (let i = 0; i < data.length; i += 4) {
+    const promedio = (data[i] + data[i + 1] + data[i + 2]) / 3;
+
+    // CONTRASTE
+    //const valor = promedio > 140 ? 255 : 0;
+    const valor = promedio > 190 ? 255 : 0;
+
+    data[i] = valor;
+    data[i + 1] = valor;
+    data[i + 2] = valor;
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+}
 
 // ==========================
 // PROCESAR TEXTO
@@ -207,11 +282,16 @@ function procesarTexto(texto) {
   const lineas = texto.split("\n");
 
   lineas.forEach((linea) => {
-    const limpio = linea.replace(/\s/g, "").replace(/[^\d]/g, "");
+    //const limpio = linea.replace(/\s/g, "").replace(/[^\d]/g, "");
+    const match = linea.match(/\d+/);
 
-    if (!limpio) return;
+    if (!match) return;
 
-    const numero = parseInt(limpio);
+    const numero = parseInt(match[0]);
+
+    //if (!limpio) return;
+
+    //const numero = parseInt(limpio);
 
     if (isNaN(numero)) return;
 
