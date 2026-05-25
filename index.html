@@ -1,10 +1,10 @@
-<!-- index.html -->
 <!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Escáner de Números</title>
+
+    <title>OCR Matemático</title>
 
     <link rel="stylesheet" href="style.css" />
 
@@ -12,20 +12,35 @@
   </head>
   <body>
     <div class="container">
-      <h1>Escanear y Sumar</h1>
+      <h1>OCR Matemático</h1>
 
       <video id="video" autoplay playsinline></video>
 
       <canvas id="canvas"></canvas>
 
-      <button id="btnEscanear">Escanear Número</button>
+      <button id="btnCapturar">Escanear</button>
 
-      <div class="resultado">
-        Total:
-        <span id="total">0</span>
+      <div class="numerosContainer">
+        <h2>Números Detectados</h2>
+
+        <div id="listaNumeros"></div>
       </div>
 
-      <div id="lista"></div>
+      <div class="acciones">
+        <button class="operacion" data-op="sumar">SUMAR</button>
+
+        <button class="operacion" data-op="restar">RESTAR</button>
+
+        <button class="operacion" data-op="multiplicar">MULTIPLICAR</button>
+
+        <button class="operacion" data-op="promedio">PROMEDIO</button>
+      </div>
+
+      <div class="resultado">
+        Resultado:
+
+        <span id="resultado"> 0 </span>
+      </div>
     </div>
 
     <script src="script.js"></script>
